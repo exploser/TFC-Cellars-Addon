@@ -17,35 +17,35 @@ import sladki.tfc.TileEntities.TEIceBunker;
 import com.bioxx.tfc.Core.TFCTabs;
 
 public class BlockIceBunker extends BlockContainer {
-	
+
 	private static IIcon textureTop;
 	private static IIcon textureSide;
-	
+
 	public BlockIceBunker(Material material) {
 		super(material);
 		this.setCreativeTab(TFCTabs.TFC_DEVICES);
 		this.setStepSound(Block.soundTypeWood);
 	}
-	
+
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX,
 			float hitY, float hitZ) {
-		if(world.isRemote) {
+		if (world.isRemote) {
 			return true;
 		}
-		
+
 		boolean getInfo = false;
-		if(player.isSneaking()) {
-			if(player.getCurrentEquippedItem() == null) {
-				getInfo = true;
-			} else {
-				return false;
-			}
+		if (player.isSneaking()) {
+			// if (player.getCurrentEquippedItem() == null) {
+			getInfo = true;
+			// } else {
+			// return false;
+			// }
 		}
-		
+
 		TEIceBunker tileEntity = (TEIceBunker) world.getTileEntity(x, y, z);
-		if(tileEntity != null) {
-			if(getInfo) {
+		if (tileEntity != null) {
+			if (getInfo) {
 				tileEntity.getCellarInfo(player);
 				return true;
 			}
@@ -54,37 +54,36 @@ public class BlockIceBunker extends BlockContainer {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public IIcon getIcon(int side, int meta) {
-		if(side == 1) {
+		if (side == 1) {
 			return textureTop;
 		}
 		return textureSide;
 	}
-	
+
 	@Override
 	public void registerBlockIcons(IIconRegister registerer) {
 		textureSide = registerer.registerIcon("minecraft" + ":" + "planks_oak");
 		textureTop = registerer.registerIcon(Cellars.MODID + ":" + "iceBunkerTop");
 	}
 
-
 	@Override
 	public TileEntity createNewTileEntity(World world, int meta) {
 		return new TEIceBunker();
 	}
-	
+
 	@Override
 	public void breakBlock(World world, int x, int y, int z, Block block, int metadata) {
 		destroyCellar(world, x, y, z);
 		dropItems(world, x, y, z);
 		super.breakBlock(world, x, y, z, block, metadata);
 	}
-	
+
 	private void destroyCellar(World world, int x, int y, int z) {
 		TEIceBunker tileEntity = (TEIceBunker) world.getTileEntity(x, y, z);
-		if(tileEntity != null) {
+		if (tileEntity != null) {
 			tileEntity.updateContainers(true);
 		}
 	}
@@ -95,13 +94,12 @@ public class BlockIceBunker extends BlockContainer {
 			return;
 		}
 		IInventory inventory = (IInventory) tileEntity;
-		
+
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack item = inventory.getStackInSlot(i);
-			
+
 			if (item != null && item.stackSize > 0) {
-				EntityItem entityItem = new EntityItem(world,
-						x + 0.5, y + 0.5, z + 0.5, item);
+				EntityItem entityItem = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, item);
 				world.spawnEntityInWorld(entityItem);
 			}
 		}

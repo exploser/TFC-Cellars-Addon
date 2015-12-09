@@ -3,6 +3,7 @@ package sladki.tfc.TileEntities;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -73,7 +74,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 				player.addChatMessage(new ChatComponentText("The cellar is chilly"));
 			}
 		} else {
-			player.addChatMessage(new ChatComponentText("The cellar is not complete or is not chilled yet"));
+			player.addChatMessage(new ChatComponentText("The cellar is not complete"));
 		}
 	}
 	
@@ -115,7 +116,10 @@ public class TEIceBunker extends TileEntity implements IInventory {
 							coolantAmount = coolantAmount + 120;
 						} else if(Block.getBlockFromItem(inventory[slot].getItem()) == Blocks.snow) {
 							coolantAmount = coolantAmount + 40;
+						} else if(inventory[slot].getItem() == Items.snowball) {
+							coolantAmount = coolantAmount + 10;
 						}
+						
 						lastUpdate = TFC_Time.getTotalDays();
 						decrStackSize(slot, 1);
 						temperature = ModConfig.iceHouseTemperature;
@@ -285,13 +289,13 @@ public class TEIceBunker extends TileEntity implements IInventory {
 		}
 		
 		//check the entrance
-		for(int y = 0; y < 4; y++) {
+		for(int y = 0; y < innerHeight + 2; y++) {
 			for(int x = -MathHelper.abs_int(entrance[3]); x <= MathHelper.abs_int(entrance[3]); x++) {
 				for(int z = -MathHelper.abs_int(entrance[2]); z <= MathHelper.abs_int(entrance[2]); z++ ) {
 					
 					blockType = getBlockType(x + entrance[0] + entrance[2], y, z + entrance[1] + entrance[3]);
 				
-					if(y == 1 || y == 2) {
+					if(y > 0 && y < innerHeight + 1) {
 						if(x == 0 && z == 0) {
 							if(blockType == 1) {
 								continue;
@@ -309,8 +313,8 @@ public class TEIceBunker extends TileEntity implements IInventory {
 					}
 					
 					if(ModConfig.isDebugging) {
-						System.out.println("Doors at the cellar at " + this.xCoord + " " + this.yCoord + " " + this.zCoord
-								+ " doesn't surrounded by wall, block there is " + blockType);
+						System.out.println("Door in the cellar at " + this.xCoord + " " + this.yCoord + " " + this.zCoord
+								+ " isn't surrounded by wall, block there is " + blockType);
 					}
 					return false;
 				}
@@ -349,7 +353,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			oldSize[2] = size[2]; oldSize[0] = size[0];
 		}
 		
-		for(int y = 1; y <=2; y++) {
+		for(int y = 1; y <= innerHeight; y++) {
 			if(isComplete) {
 				for(int z = -size[2]; z <= size[0]; z++) {
 					for(int x = -size[1]; x <= size[3]; x++) {
@@ -488,10 +492,18 @@ public class TEIceBunker extends TileEntity implements IInventory {
 		writeToNBT(tagCompound);
 		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, tagCompound);
 	}
-	
+
 	@Override
 	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet) {
 		readFromNBT(packet.func_148857_g());
+	}
+
+	public int getCoolantAmount() {
+		return coolantAmount;
+	}
+	
+	public float getTemperature() {
+		return temperature;
 	}
 
 }

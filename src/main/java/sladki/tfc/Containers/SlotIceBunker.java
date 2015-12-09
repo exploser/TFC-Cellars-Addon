@@ -18,11 +18,8 @@ public class SlotIceBunker extends Slot {
 	
 	@Override
 	public boolean isItemValid(ItemStack itemStack) {
-		if(Block.getBlockFromItem(itemStack.getItem()) == ModManager.IceBlock
-		|| Block.getBlockFromItem(itemStack.getItem()) == Blocks.snow) {
-			
-			return true;
-		}
-		return false;
+		return	  (Block.getBlockFromItem(itemStack.getItem()) == ModManager.IceBlock
+				|| Block.getBlockFromItem(itemStack.getItem()) == Blocks.snow
+				|| itemStack.getItem() == Items.snowball);
 	}
 }

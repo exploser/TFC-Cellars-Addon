@@ -14,9 +14,9 @@ public class GuiHandler implements IGuiHandler {
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if(ID == 0) {
+		if (ID == 0) {
 			return new ContainerIceBunker(player.inventory, (TEIceBunker) tileEntity);
-		} else if(ID == 1) {
+		} else if (ID == 1) {
 			return new ContainerCellarShelf(player.inventory, (TECellarShelf) tileEntity);
 		}
 		return null;
@@ -25,12 +25,12 @@ public class GuiHandler implements IGuiHandler {
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if(ID == 0) {
+		if (ID == 0) {
 			return new GuiIceBunker(player.inventory, (TEIceBunker) tileEntity);
-		} else if(ID == 1) {
+		} else if (ID == 1) {
 			return new GuiCellarShelf(player.inventory, (TECellarShelf) tileEntity);
 		}
 		return null;
-	}	
-	
+	}
+
 }
