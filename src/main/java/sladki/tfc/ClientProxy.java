@@ -1,6 +1,5 @@
 package sladki.tfc;
 
-import net.minecraft.item.ItemStack;
 import sladki.tfc.Blocks.BlockCellarShelf;
 import sladki.tfc.Render.RenderCellarShelf;
 import cpw.mods.fml.client.registry.RenderingRegistry;

@@ -241,7 +241,6 @@ public class BlockCellarDoor extends Block {
 			boolean open = (meta & 4) != 0;
 			boolean facing = false;
 			boolean flipped = false;
-			boolean hingeLeft = false;
 			boolean upper = (meta & 8) != 0;
 			
 			if(open) {

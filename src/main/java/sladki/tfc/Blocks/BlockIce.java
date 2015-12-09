@@ -2,15 +2,12 @@ package sladki.tfc.Blocks;
 
 import java.util.Random;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.world.EnumSkyBlock;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-
 import com.bioxx.tfc.Blocks.Vanilla.BlockCustomIce;
 import com.bioxx.tfc.Core.TFC_Climate;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 
 public class BlockIce extends BlockCustomIce {
 

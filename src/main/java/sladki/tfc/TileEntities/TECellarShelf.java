@@ -101,8 +101,6 @@ public class TECellarShelf extends TileEntity implements IInventory {
 							float enviromentalDecay = 0;
 							float decayRate = 1.0f;
 
-							float weight = tag.getFloat("foodWeight");
-
 							if (temperature > 0) {
 								enviromentalDecay = 2 * (1.0f - (15.0f / (15.0f + temperature)));
 							}

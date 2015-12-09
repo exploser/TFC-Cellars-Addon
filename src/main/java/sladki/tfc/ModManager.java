@@ -190,7 +190,7 @@ public class ModManager {
 	public static void registerAnvilRecipes() {
 		String iceSawPlan = "icesaw";
 		
-		Map map = AnvilManager.getInstance().getPlans();
+		Map<String, PlanRecipe> map = AnvilManager.getInstance().getPlans();
 		if(map.containsKey(iceSawPlan)) {
 			return;
 		}

@@ -1,5 +1,8 @@
 package sladki.tfc.Containers;
 
+import com.bioxx.tfc.Containers.Slots.SlotFoodOnly;
+import com.bioxx.tfc.api.Enums.EnumSize;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -7,15 +10,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import sladki.tfc.TileEntities.TECellarShelf;
 
-import com.bioxx.tfc.Containers.Slots.SlotCookableFoodOnly;
-import com.bioxx.tfc.Containers.Slots.SlotFoodOnly;
-import com.bioxx.tfc.api.TFCItems;
-import com.bioxx.tfc.api.Enums.EnumSize;
-
 public class ContainerCellarShelf extends Container {
 
-	private TECellarShelf tileEntity;
-	
 	public ContainerCellarShelf(InventoryPlayer player, TECellarShelf tileEntity) {	
 		for(int y = 0; y < 2; y++) {
 			for(int x = 0; x < 7; x++) {

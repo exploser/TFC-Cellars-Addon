@@ -9,8 +9,6 @@ import sladki.tfc.TileEntities.TEIceBunker;
 
 public class ContainerIceBunker extends Container {
 
-	private TEIceBunker tileEntity;
-
 	public ContainerIceBunker(InventoryPlayer player, TEIceBunker tileEntity) {
 		addSlotToContainer(new SlotIceBunker(tileEntity, 0, 71, 25));
 		addSlotToContainer(new SlotIceBunker(tileEntity, 1, 89, 25));
