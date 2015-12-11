@@ -121,7 +121,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 					if (outsideTemp > ModConfig.iceHouseTemperature + loss) {
 						int volume = (size[1] + size[3] + 1) * (size[0] + size[2] + 1);
                         coolantAmount -= (ModConfig.coolantConsumptionMultiplier
-                                * (0.1 * volume * outsideTemp + volume + 2)) / TFC_Time.HOURS_IN_DAY;
+                                * (0.025 * volume * outsideTemp + volume + 2)) / TFC_Time.HOURS_IN_DAY;
 					}
 					lastUpdate++;
 				}

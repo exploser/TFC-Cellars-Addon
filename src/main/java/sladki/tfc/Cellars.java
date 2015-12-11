@@ -12,8 +12,8 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 @Mod(name = Cellars.MODNAME, modid = Cellars.MODID, version = Cellars.VERSION, dependencies = "after:terrafirmacraft")
 public class Cellars {
 	
-	public static final String MODID = "tfccellars";
-	public static final String MODNAME = "CellarsAddon";
+	public static final String MODID = "cellarsreworked";
+	public static final String MODNAME = "TFC Cellars Reworked";
 	public static final String VERSION = "1.010";
 	
 	@Instance("tfccellars")
