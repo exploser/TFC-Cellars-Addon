@@ -3,7 +3,6 @@ bin/
 MinecraftForge-Credits.txt
 MinecraftForge-License.txt
 README.txt
-*.jar
 .metadata/
 .gradle/
 .classpath
