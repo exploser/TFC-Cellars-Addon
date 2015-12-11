@@ -3,8 +3,9 @@ bin/
 MinecraftForge-Credits.txt
 MinecraftForge-License.txt
 README.txt
+*.jar
 .metadata/
 .gradle/
 .classpath
 .project
-libs/[1.7.10]TerraFirmaCraft-0.79.26.881.jar
+.settings/
