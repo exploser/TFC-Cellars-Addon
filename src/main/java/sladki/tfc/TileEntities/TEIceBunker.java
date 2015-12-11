@@ -31,7 +31,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 	// NBT
 	private ItemStack[] inventory = null;
 	private float coolantAmount = 0;
-	private int lastUpdate = 0;
+	private long lastUpdate = 0;
 
 	private int[] entrance = new int[4]; // x, z of the first door + offsetX,
 											// offsetZ of the second door
@@ -63,7 +63,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 				player.addChatMessage(new ChatComponentText("The cellar is chilly"));
 			}
 			player.addChatMessage(
-					new ChatComponentText("Temperature: " + temperature + " Coolant: " + coolantAmount));
+					new ChatComponentText(String.format("Temperature: %f.2, Coolant: %f.2", temperature, coolantAmount)));
 		} else {
 			player.addChatMessage(new ChatComponentText("The cellar is not complete"));
 		}
@@ -107,7 +107,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 						int addedCoolant = Coolants.getCoolantFromItem(inventory[slot].getItem());
 						coolantAmount += addedCoolant;
 						maxCoolantAmount = addedCoolant;
-						lastUpdate = TFC_Time.getTotalDays();
+						lastUpdate = TFC_Time.getTotalHours();
 						decrStackSize(slot, 1);
 						temperature = ModConfig.iceHouseTemperature;
 						break;
@@ -116,10 +116,12 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			}
 
 			if (coolantAmount > 0) {
+				// TODO: check the formula
 				if (lastUpdate < TFC_Time.getTotalHours()) {
 					if (outsideTemp > ModConfig.iceHouseTemperature + loss) {
 						int volume = (size[1] + size[3] + 1) * (size[0] + size[2] + 1);
-						coolantAmount --;
+                        coolantAmount -= (ModConfig.coolantConsumptionMultiplier
+                                * (0.1 * volume * outsideTemp + volume + 2)) / TFC_Time.HOURS_IN_DAY;
 					}
 					lastUpdate++;
 				}
@@ -131,7 +133,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 	}
 
 	private void calculateDoorsLoss() {
-
+		loss = 0;
 		// 1st door
 		Block door = this.worldObj.getBlock(xCoord + entrance[0], yCoord + 1, zCoord + entrance[1]);
 		if (door == ModManager.CellarDoorBlock && !((BlockCellarDoor) door).isDoorOpen(this.worldObj,
@@ -461,8 +463,8 @@ public class TEIceBunker extends TileEntity implements IInventory {
 				inventory[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
-		lastUpdate = tagCompound.getInteger("LastUpdate");
-		coolantAmount = tagCompound.getInteger("CoolantAmount");
+		lastUpdate = tagCompound.getLong("LastUpdate");
+		coolantAmount = tagCompound.getFloat("CoolantAmount");
 		maxCoolantAmount = tagCompound.getInteger("MaxCoolantAmount");
 	}
 
@@ -480,7 +482,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			}
 		}
 		tagCompound.setTag("Items", tagList);
-		tagCompound.setInteger("LastUpdate", lastUpdate);
+		tagCompound.setLong("LastUpdate", lastUpdate);
 		tagCompound.setFloat("CoolantAmount", coolantAmount);
 		tagCompound.setInteger("MaxCoolantAmount", maxCoolantAmount);
 
