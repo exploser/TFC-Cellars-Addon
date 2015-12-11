@@ -8,3 +8,4 @@ README.txt
 .gradle/
 .classpath
 .project
+.settings/
