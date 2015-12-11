@@ -1,5 +1,7 @@
 package sladki.tfc.TileEntities;
 
+import com.bioxx.tfc.Core.TFC_Core;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -9,13 +11,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-
-import com.bioxx.tfc.Core.TFC_Core;
-import com.bioxx.tfc.Core.TFC_Time;
-import com.bioxx.tfc.api.TFCOptions;
-import com.bioxx.tfc.api.Interfaces.IFood;
 
 public class TECellarShelf extends TileEntity implements IInventory {
 
@@ -44,12 +40,17 @@ public class TECellarShelf extends TileEntity implements IInventory {
 
 		// Wait 120 ticks for cellars updates to prevent ticking decay before
 		if (inCellar) {
-			decayTick();
+			// if the shelf is inside a cellar, use cellar temperature
+			float envDecay = TFC_Core.getEnvironmentalDecay(temperature);
+			TFC_Core.handleItemTicking(this, worldObj, xCoord, yCoord, zCoord, envDecay);
 		} else {
+			// otherwise, let TFC handle the ticking
 			if (updateTickCounter > 0) {
 				updateTickCounter--;
 
 				// To ensure correct work for cellars built in multiple chunks
+				// TODO: enable this if really needed
+				/*
 				if (updateTickCounter == 100) {
 					World world = this.getWorldObj();
 
@@ -62,7 +63,7 @@ public class TECellarShelf extends TileEntity implements IInventory {
 					world.getBlock(xCoord + 4, 0, zCoord + 4);
 					world.getBlock(xCoord - 4, 0, zCoord - 4);
 					world.getBlock(xCoord - 4, 0, zCoord + 4);
-				}
+				}*/
 				return;
 			}
 
@@ -73,72 +74,6 @@ public class TECellarShelf extends TileEntity implements IInventory {
 	public void updateShelf(boolean inCellar, float temp) {
 		this.inCellar = inCellar;
 		this.temperature = temp;
-	}
-
-	private void decayTick() {
-		for (int i = 0; i < 14; i++) {
-			ItemStack itemStack = inventory[i];
-			if (itemStack != null) {
-				if (itemStack.getItem() instanceof IFood) {
-
-					NBTTagCompound tag = itemStack.getTagCompound();
-					if (tag != null && (tag.hasKey("foodWeight") && tag.hasKey("foodDecay"))) {
-
-						if (tag.getInteger("decayTimer") < TFC_Time.getTotalHours()) {
-
-							int timeDelta = (int) (TFC_Time.getTotalHours() - tag.getInteger("decayTimer"));
-							float protMult = 1;
-
-							if (TFCOptions.useDecayProtection) {
-								if (timeDelta > TFCOptions.decayProtectionDays * 24) {
-									tag.setInteger("decayTimer", (int) TFC_Time.getTotalHours() - 24);
-								} else if (timeDelta > 24) {
-									protMult = 1 - (timeDelta / (TFCOptions.decayProtectionDays * 24));
-								}
-							}
-
-							float currentDecay = tag.getFloat("foodDecay");
-							float enviromentalDecay = 0;
-							float decayRate = 1.0f;
-
-							if (temperature > 0) {
-								enviromentalDecay = 2 * (1.0f - (15.0f / (15.0f + temperature)));
-							}
-
-							if (tag.hasKey("decayRate")) {
-								decayRate = tag.getFloat("decayRate");
-							} else {
-								decayRate = ((IFood) itemStack.getItem()).getDecayRate(itemStack);
-							}
-
-							if (currentDecay < 0) {
-								float decayIncrement = decayRate * enviromentalDecay;
-								if (currentDecay + decayIncrement < 0) {
-									currentDecay = currentDecay + decayIncrement;
-								} else {
-									currentDecay = 0;
-								}
-							} else if (currentDecay == 0) {
-								currentDecay = (tag.getFloat("foodWeight") * 0.0025f) * TFCOptions.decayMultiplier;
-							} else {
-								double foodDecayRate = TFCOptions.foodDecayRate - 1;
-								foodDecayRate = foodDecayRate
-										* (decayRate * enviromentalDecay * protMult * TFCOptions.decayMultiplier);
-								currentDecay = (float) (currentDecay * (foodDecayRate + 1));
-							}
-							tag.setInteger("decayTimer", (tag.getInteger("decayTimer") + 1));
-							tag.setFloat("foodDecay", currentDecay);
-						}
-
-						if (tag.getFloat("foodDecay") / tag.getFloat("foodWeight") > 0.9f) {
-							inventory[i] = null;
-						} else {
-							inventory[i].setTagCompound(tag);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	@Override

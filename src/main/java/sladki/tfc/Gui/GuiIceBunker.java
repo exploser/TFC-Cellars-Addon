@@ -35,10 +35,11 @@ public class GuiIceBunker extends GuiContainer {
 
 	@Override
 	protected void drawGuiContainerForegroundLayer(int param1, int param2) {
-		//teBunker.updateEntity();
-		int coolantAmount = teBunker.getCoolantAmount();
+		// teBunker.updateEntity();
+		float coolantAmount = teBunker.getCoolantAmount();
+		int maxCoolantAmount = teBunker.getMaxCoolantAmount();
 		float temperature = teBunker.getTemperature();
-		
+
 		// draw text and stuff here
 		// the parameters for drawString are: string, x, y, color
 		fontRendererObj.drawString("Coolant:", 8, 32, 0);
@@ -49,10 +50,14 @@ public class GuiIceBunker extends GuiContainer {
 		drawRect(7, 41, 7 + 50, 41 + 8, 0xFF000000);
 		// draw coolant indicator
 		int length = 1;
+
+		if (maxCoolantAmount <= 0)
+			maxCoolantAmount = 120;
+
 		if (coolantAmount > 0)
-			length = 48 * coolantAmount / 120;
-		
-		this.drawGradientRect(8, 42, 8 + length, 42 + 6, 0xFF890020, 0xFF000089);
+			length = (int) (48 * coolantAmount / maxCoolantAmount);
+
+		this.drawGradientRect(8, 42, 8 + length, 42 + 6, 0xFFA92040, 0xFF2020A9);
 		// draws "Inventory" or your regional equivalent
 		mc.fontRenderer.drawString(StatCollector.translateToLocal("container.inventory"), 8, ySize - 96 + 2, 0);
 	}

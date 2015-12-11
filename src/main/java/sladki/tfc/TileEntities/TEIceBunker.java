@@ -1,9 +1,15 @@
 package sladki.tfc.TileEntities;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.bioxx.tfc.Core.TFC_Climate;
+import com.bioxx.tfc.Core.TFC_Time;
+import com.bioxx.tfc.api.TFCBlocks;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,21 +21,16 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.Constants.NBT;
+import ru.exsdev.Utility.Coolants;
 import sladki.tfc.ModConfig;
 import sladki.tfc.ModManager;
 import sladki.tfc.Blocks.BlockCellarDoor;
-
-import com.bioxx.tfc.Core.TFC_Climate;
-import com.bioxx.tfc.Core.TFC_Time;
-import com.bioxx.tfc.api.TFCBlocks;
-import com.sun.corba.se.spi.activation.Server;
 
 public class TEIceBunker extends TileEntity implements IInventory {
 
 	// NBT
 	private ItemStack[] inventory = null;
-	private int coolantAmount = 0;
+	private float coolantAmount = 0;
 	private int lastUpdate = 0;
 
 	private int[] entrance = new int[4]; // x, z of the first door + offsetX,
@@ -41,36 +42,18 @@ public class TEIceBunker extends TileEntity implements IInventory {
 	private float temperature = 0;
 	private int updateTickCounter = 1200;
 
+	private int loss = 0;
+	private int maxCoolantAmount = 120;
+
 	private static int innerHeight = 2;
+	private static List<Block> allowedBlocks = Arrays.asList(Blocks.wall_sign, Blocks.standing_sign, Blocks.air,
+			TFCBlocks.barrel, TFCBlocks.foodPrep, ModManager.CellarWallBlock, ModManager.CellarShelfBlock);
 
 	public TEIceBunker() {
 		inventory = new ItemStack[getSizeInventory()];
 	}
 
 	public void getCellarInfo(EntityPlayer player) {
-		/*
-		 * if(isComplete) { player.addChatMessage(new ChatComponentText(
-		 * "Cellar is complete and have temperature " + temperature +
-		 * "\u00b0C inside")); player.addChatMessage(new
-		 * ChatComponentText(""+coolantAmount)); } else {
-		 * player.addChatMessage(new ChatComponentText(
-		 * "Cellar is not complete or not cooled enough")); }
-		 */
-
-		// TODO: delete in release
-
-		// player.addChatMessage(
-		// new ChatComponentText("Size: " + size[0] + " " + size[1] + " " +
-		// size[2] + " " + size[3] + " "));
-
-		//
-
-		if (ModConfig.isDebugging) {
-			//player.addChatMessage(new ChatComponentText("Look at console for more information"));
-			updateCellar(true);
-			// return;
-		}
-
 		if (isComplete) {
 			if (temperature < 0) {
 				player.addChatMessage(new ChatComponentText("It is icy here"));
@@ -79,10 +62,11 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			} else {
 				player.addChatMessage(new ChatComponentText("The cellar is chilly"));
 			}
+			player.addChatMessage(
+					new ChatComponentText("Temperature: " + temperature + " Coolant: " + coolantAmount));
 		} else {
 			player.addChatMessage(new ChatComponentText("The cellar is not complete"));
 		}
-		player.addChatMessage(new ChatComponentText("Temperature: " + temperature + " Coolant: " + coolantAmount));
 	}
 
 	@Override
@@ -120,14 +104,9 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			if (coolantAmount <= 0) {
 				for (int slot = 3; slot >= 0; slot--) {
 					if (inventory[slot] != null) {
-						if (Block.getBlockFromItem(inventory[slot].getItem()) == ModManager.IceBlock) {
-							coolantAmount = coolantAmount + 120;
-						} else if (Block.getBlockFromItem(inventory[slot].getItem()) == Blocks.snow) {
-							coolantAmount = coolantAmount + 40;
-						} else if (inventory[slot].getItem() == Items.snowball) {
-							coolantAmount = coolantAmount + 10;
-						}
-
+						int addedCoolant = Coolants.getCoolantFromItem(inventory[slot].getItem());
+						coolantAmount += addedCoolant;
+						maxCoolantAmount = addedCoolant;
 						lastUpdate = TFC_Time.getTotalDays();
 						decrStackSize(slot, 1);
 						temperature = ModConfig.iceHouseTemperature;
@@ -135,27 +114,23 @@ public class TEIceBunker extends TileEntity implements IInventory {
 					}
 				}
 			}
+
 			if (coolantAmount > 0) {
-				temperature = ModConfig.iceHouseTemperature;
-				if (lastUpdate < TFC_Time.getTotalDays()) {
-					if (outsideTemp > -10) { // magic
+				if (lastUpdate < TFC_Time.getTotalHours()) {
+					if (outsideTemp > ModConfig.iceHouseTemperature + loss) {
 						int volume = (size[1] + size[3] + 1) * (size[0] + size[2] + 1);
-						coolantAmount = coolantAmount - (int) (ModConfig.coolantConsumptionMultiplier
-								* (0.1 * volume * outsideTemp + volume + 2));
+						coolantAmount --;
 					}
 					lastUpdate++;
 				}
 			}
-			temperature = temperature + doorsLoss();
-			if (temperature > outsideTemp) {
-				temperature = outsideTemp;
-			}
+			temperature = Math.min(ModConfig.iceHouseTemperature + loss, outsideTemp);
+
 		}
 		this.worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
 	}
 
-	private int doorsLoss() {
-		int loss = 0;
+	private void calculateDoorsLoss() {
 
 		// 1st door
 		Block door = this.worldObj.getBlock(xCoord + entrance[0], yCoord + 1, zCoord + entrance[1]);
@@ -179,7 +154,6 @@ public class TEIceBunker extends TileEntity implements IInventory {
 				loss = 1;
 			}
 		}
-		return loss;
 	}
 
 	private boolean isStructureComplete() {
@@ -348,6 +322,8 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			System.out.println("Cellar at " + this.xCoord + " " + this.yCoord + " " + this.zCoord + " is complete");
 		}
 
+		calculateDoorsLoss();
+
 		return true;
 	}
 
@@ -357,9 +333,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			return 0;
 		} else if (block == ModManager.CellarDoorBlock) {
 			return 1;
-		} else if (block == ModManager.CellarShelfBlock || block == TFCBlocks.barrel || block == Blocks.wall_sign
-				|| block == Blocks.standing_sign || block == TFCBlocks.foodPrep
-				|| block.isAir(this.worldObj, x, y, z)) {
+		} else if (allowedBlocks.contains(block)) {
 			return 2;
 		}
 
@@ -408,7 +382,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 
 	@Override
 	public int getSizeInventory() {
-		return 4;
+		return 5;
 	}
 
 	@Override
@@ -489,6 +463,7 @@ public class TEIceBunker extends TileEntity implements IInventory {
 		}
 		lastUpdate = tagCompound.getInteger("LastUpdate");
 		coolantAmount = tagCompound.getInteger("CoolantAmount");
+		maxCoolantAmount = tagCompound.getInteger("MaxCoolantAmount");
 	}
 
 	@Override
@@ -506,16 +481,18 @@ public class TEIceBunker extends TileEntity implements IInventory {
 		}
 		tagCompound.setTag("Items", tagList);
 		tagCompound.setInteger("LastUpdate", lastUpdate);
-		tagCompound.setInteger("CoolantAmount", coolantAmount);
+		tagCompound.setFloat("CoolantAmount", coolantAmount);
+		tagCompound.setInteger("MaxCoolantAmount", maxCoolantAmount);
 
 	}
 
 	@Override
 	public Packet getDescriptionPacket() {
 		NBTTagCompound tagCompound = new NBTTagCompound();
-		tagCompound.setInteger("coolant", coolantAmount);
-		tagCompound.setFloat("temperature", temperature);
-		tagCompound.setBoolean("isComplete", isComplete);
+		tagCompound.setFloat("CoolantAmount", coolantAmount);
+		tagCompound.setInteger("MaxCoolantAmount", maxCoolantAmount);
+		tagCompound.setFloat("Temperature", temperature);
+		tagCompound.setBoolean("IsComplete", isComplete);
 		writeToNBT(tagCompound);
 		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, tagCompound);
 	}
@@ -524,12 +501,13 @@ public class TEIceBunker extends TileEntity implements IInventory {
 	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet) {
 		NBTTagCompound tagCompound = packet.func_148857_g();
 		readFromNBT(tagCompound);
-		coolantAmount = tagCompound.getInteger("coolant");
-		temperature = tagCompound.getFloat("temperature");
-		isComplete = tagCompound.getBoolean("isComplete");
+		coolantAmount = tagCompound.getInteger("CoolantAmount");
+		maxCoolantAmount = tagCompound.getInteger("MaxCoolantAmount");
+		temperature = tagCompound.getFloat("Temperature");
+		isComplete = tagCompound.getBoolean("IsComplete");
 	}
 
-	public int getCoolantAmount() {
+	public float getCoolantAmount() {
 		return this.coolantAmount;
 	}
 
@@ -538,6 +516,11 @@ public class TEIceBunker extends TileEntity implements IInventory {
 			return this.temperature;
 		else
 			return TFC_Climate.getHeightAdjustedTemp(this.worldObj, xCoord, yCoord + 1, zCoord);
+	}
+	
+
+	public int getMaxCoolantAmount() {
+		return maxCoolantAmount;
 	}
 
 }
