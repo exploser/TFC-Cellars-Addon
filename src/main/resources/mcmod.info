@@ -1,16 +1,16 @@
 [
 {
   "modid": "tfccellarsaddon",
-  "name": "TFC Cellars Addon",
+  "name": "TFCCellarsAddon",
   "description": "TFC cellars and ice-houses addon",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Sladki", "exploser"],
+  "authors": [ "Sladki", "exploser" ],
   "credits": "",
   "logoFile": "",
   "screenshots": [],
-  "dependencies": []
+  "dependencies": [ "TerraFirmaCraft" ]
 }
 ]
