@@ -35,7 +35,7 @@ public class GuiIceBunker extends GuiContainer {
 
 	@Override
 	protected void drawGuiContainerForegroundLayer(int param1, int param2) {
-		teBunker.updateEntity();
+		//teBunker.updateEntity();
 		int coolantAmount = teBunker.getCoolantAmount();
 		float temperature = teBunker.getTemperature();
 		
@@ -48,7 +48,7 @@ public class GuiIceBunker extends GuiContainer {
 		// draw frame
 		drawRect(7, 41, 7 + 50, 41 + 8, 0xFF000000);
 		// draw coolant indicator
-		int length = 0;
+		int length = 1;
 		if (coolantAmount > 0)
 			length = 48 * coolantAmount / 120;
 		
