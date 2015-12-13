@@ -20,69 +20,81 @@ import com.bioxx.tfc.Core.TFCTabs;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockCellarShelf extends BlockContainer {
-	
+public class BlockCellarShelf extends BlockContainer
+{
+
 	public static IIcon textureSide;
 	public static int renderId = 0;
 
-	public BlockCellarShelf(Material material) {
+	public BlockCellarShelf(Material material)
+	{
 		super(material);
 		this.setCreativeTab(TFCTabs.TFC_DEVICES);
 		this.setStepSound(Block.soundTypeWood);
 		this.setBlockBounds(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	}
-	
+
 	@Override
-	public IIcon getIcon(int side, int meta) {
+	public IIcon getIcon(int side, int meta)
+	{
 		return textureSide;
 	}
-	
+
 	@Override
-	public void registerBlockIcons(IIconRegister registerer) {
+	public void registerBlockIcons(IIconRegister registerer)
+	{
 		textureSide = registerer.registerIcon("minecraft:planks_oak");
 	}
-	
+
 	@Override
-	public boolean isOpaqueCube() {
+	public boolean isOpaqueCube()
+	{
 		return false;
 	}
-	
+
 	@Override
-	public boolean renderAsNormalBlock() {
+	public boolean renderAsNormalBlock()
+	{
 		return false;
 	}
-	
+
 	@Override
-	public int getRenderType() {
+	public int getRenderType()
+	{
 		return renderId;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
-	public boolean shouldSideBeRendered(IBlockAccess par1iBlockAccess, int par2, int par3, int par4, int par5) {
+	public boolean shouldSideBeRendered(IBlockAccess par1iBlockAccess, int par2, int par3, int par4, int par5)
+	{
 		return true;
 	}
-	
+
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX,
-			float hitY, float hitZ) {
-		if(world.isRemote) {
+			float hitY, float hitZ)
+	{
+		if (world.isRemote)
+		{
 			return true;
 		}
-		
-		if(player.isSneaking()) {
+
+		if (player.isSneaking())
+		{
 			return false;
 		}
-		
+
 		TECellarShelf tileEntity = (TECellarShelf) world.getTileEntity(x, y, z);
-		if(tileEntity != null) {
-			
-			//TODO:Delete these
-			
-			//tileEntity.getShelfInfo(player);
-			
+		if (tileEntity != null)
+		{
+
+			// TODO:Delete these
+
+			// tileEntity.getShelfInfo(player);
+
 			//
-			
+
 			player.openGui(Cellars.instance, 1, world, x, y, z);
 			return true;
 		}
@@ -90,29 +102,34 @@ public class BlockCellarShelf extends BlockContainer {
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createNewTileEntity(World world, int meta)
+	{
 		return new TECellarShelf();
 	}
-	
+
 	@Override
-	public void breakBlock(World world, int x, int y, int z, Block block, int metadata) {
+	public void breakBlock(World world, int x, int y, int z, Block block, int metadata)
+	{
 		dropItems(world, x, y, z);
 		super.breakBlock(world, x, y, z, block, metadata);
 	}
 
-	private void dropItems(World world, int x, int y, int z) {
+	private void dropItems(World world, int x, int y, int z)
+	{
 		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if (!(tileEntity instanceof IInventory)) {
+		if (!(tileEntity instanceof IInventory))
+		{
 			return;
 		}
 		IInventory inventory = (IInventory) tileEntity;
-		
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
+
+		for (int i = 0; i < inventory.getSizeInventory(); i++)
+		{
 			ItemStack item = inventory.getStackInSlot(i);
-			
-			if (item != null && item.stackSize > 0) {
-				EntityItem entityItem = new EntityItem(world,
-						x + 0.5, y + 0.5, z + 0.5, item);
+
+			if (item != null && item.stackSize > 0)
+			{
+				EntityItem entityItem = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, item);
 				world.spawnEntityInWorld(entityItem);
 			}
 		}

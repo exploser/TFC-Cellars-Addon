@@ -10,18 +10,21 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import sladki.tfc.Cellars;
 import sladki.tfc.TileEntities.TEIceBunker;
 
 import com.bioxx.tfc.Core.TFCTabs;
 
-public class BlockIceBunker extends BlockContainer {
+public class BlockIceBunker extends BlockContainer
+{
 
 	private static IIcon textureTop;
 	private static IIcon textureSide;
 
-	public BlockIceBunker(Material material) {
+	public BlockIceBunker(Material material)
+	{
 		super(material);
 		this.setCreativeTab(TFCTabs.TFC_DEVICES);
 		this.setStepSound(Block.soundTypeWood);
@@ -29,24 +32,28 @@ public class BlockIceBunker extends BlockContainer {
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX,
-			float hitY, float hitZ) {
-		if (world.isRemote) {
+			float hitY, float hitZ)
+	{
+		if (world.isRemote)
+		{
 			return true;
 		}
 
 		boolean getInfo = false;
-		if (player.isSneaking()) {
+		if (player.isSneaking())
+		{
 			// if (player.getCurrentEquippedItem() == null) {
 			getInfo = true;
 			// } else {
 			// return false;
 			// }
 		}
-
-		TEIceBunker tileEntity = (TEIceBunker) world.getTileEntity(x, y, z);
-		if (tileEntity != null) {
-			if (getInfo) {
-				tileEntity.getCellarInfo(player);
+		TEIceBunker te = (TEIceBunker) world.getTileEntity(x, y, z);
+		if (te != null)
+		{
+			if (getInfo)
+			{
+				te.getCellarInfo(player);
 				return true;
 			}
 			player.openGui(Cellars.instance, 0, world, x, y, z);
@@ -56,49 +63,71 @@ public class BlockIceBunker extends BlockContainer {
 	}
 
 	@Override
-	public IIcon getIcon(int side, int meta) {
-		if (side == 1) {
+	public int getLightValue(IBlockAccess world, int x, int y, int z)
+	{
+		TEIceBunker te = (TEIceBunker) world.getTileEntity(x, y, z);
+		if (te.isComplete())
+		{
+			return 10;
+		}
+		return 0;
+	}
+
+	@Override
+	public IIcon getIcon(int side, int meta)
+	{
+		if (side == 1)
+		{
 			return textureTop;
 		}
 		return textureSide;
 	}
 
 	@Override
-	public void registerBlockIcons(IIconRegister registerer) {
+	public void registerBlockIcons(IIconRegister registerer)
+	{
 		textureSide = registerer.registerIcon("minecraft" + ":" + "planks_oak");
 		textureTop = registerer.registerIcon(Cellars.MODID + ":" + "iceBunkerTop");
 	}
 
 	@Override
-	public TileEntity createNewTileEntity(World world, int meta) {
+	public TileEntity createNewTileEntity(World world, int meta)
+	{
 		return new TEIceBunker();
 	}
 
 	@Override
-	public void breakBlock(World world, int x, int y, int z, Block block, int metadata) {
+	public void breakBlock(World world, int x, int y, int z, Block block, int metadata)
+	{
 		destroyCellar(world, x, y, z);
 		dropItems(world, x, y, z);
 		super.breakBlock(world, x, y, z, block, metadata);
 	}
 
-	private void destroyCellar(World world, int x, int y, int z) {
+	private void destroyCellar(World world, int x, int y, int z)
+	{
 		TEIceBunker tileEntity = (TEIceBunker) world.getTileEntity(x, y, z);
-		if (tileEntity != null) {
+		if (tileEntity != null)
+		{
 			tileEntity.updateContainers(true);
 		}
 	}
 
-	private void dropItems(World world, int x, int y, int z) {
+	private void dropItems(World world, int x, int y, int z)
+	{
 		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if (!(tileEntity instanceof IInventory)) {
+		if (!(tileEntity instanceof IInventory))
+		{
 			return;
 		}
 		IInventory inventory = (IInventory) tileEntity;
 
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
+		for (int i = 0; i < inventory.getSizeInventory(); i++)
+		{
 			ItemStack item = inventory.getStackInSlot(i);
 
-			if (item != null && item.stackSize > 0) {
+			if (item != null && item.stackSize > 0)
+			{
 				EntityItem entityItem = new EntityItem(world, x + 0.5, y + 0.5, z + 0.5, item);
 				world.spawnEntityInWorld(entityItem);
 			}

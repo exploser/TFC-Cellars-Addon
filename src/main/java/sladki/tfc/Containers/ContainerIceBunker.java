@@ -7,48 +7,61 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import sladki.tfc.TileEntities.TEIceBunker;
 
-public class ContainerIceBunker extends Container {
+public class ContainerIceBunker extends Container
+{
 
-	public ContainerIceBunker(InventoryPlayer player, TEIceBunker tileEntity) {
+	public ContainerIceBunker(InventoryPlayer player, TEIceBunker tileEntity)
+	{
 		addSlotToContainer(new SlotIceBunker(tileEntity, 0, 71, 10));
 		addSlotToContainer(new SlotIceBunker(tileEntity, 1, 89, 10));
 		addSlotToContainer(new SlotIceBunker(tileEntity, 2, 71, 28));
 		addSlotToContainer(new SlotIceBunker(tileEntity, 3, 89, 28));
-		
+
 		addSlotToContainer(new SlotIceBunker(tileEntity, 4, 80, 56));
 
 		bindPlayerInventory(player);
 	}
 
 	@Override
-	public boolean canInteractWith(EntityPlayer player) {
+	public boolean canInteractWith(EntityPlayer player)
+	{
 		return true;
 	}
 
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer player, int slot) {
+	public ItemStack transferStackInSlot(EntityPlayer player, int slot)
+	{
 		ItemStack stack = null;
 		Slot slotObject = (Slot) inventorySlots.get(slot);
 
-		if (slotObject != null && slotObject.getHasStack()) {
+		if (slotObject != null && slotObject.getHasStack())
+		{
 			ItemStack stackInSlot = slotObject.getStack();
 			stack = stackInSlot.copy();
 
-			if (slot < 4) {
-				if (!this.mergeItemStack(stackInSlot, 4, this.inventorySlots.size(), true)) {
+			if (slot < 4)
+			{
+				if (!this.mergeItemStack(stackInSlot, 4, this.inventorySlots.size(), true))
+				{
 					return null;
 				}
-			} else if (!this.mergeItemStack(stackInSlot, 0, 4, false)) {
+			}
+			else if (!this.mergeItemStack(stackInSlot, 0, 4, false))
+			{
 				return null;
 			}
 
-			if (stackInSlot.stackSize == 0) {
+			if (stackInSlot.stackSize == 0)
+			{
 				slotObject.putStack(null);
-			} else {
+			}
+			else
+			{
 				slotObject.onSlotChanged();
 			}
 
-			if (stackInSlot.stackSize == stack.stackSize) {
+			if (stackInSlot.stackSize == stack.stackSize)
+			{
 				return null;
 			}
 			slotObject.onPickupFromSlot(player, stackInSlot);
@@ -57,9 +70,12 @@ public class ContainerIceBunker extends Container {
 	}
 
 	@Override
-	public boolean mergeItemStack(ItemStack is, int slotStart, int slotFinish, boolean backward) {
-		if (!backward) {
-			if (this.getSlot(0).isItemValid(is)) {
+	public boolean mergeItemStack(ItemStack is, int slotStart, int slotFinish, boolean backward)
+	{
+		if (!backward)
+		{
+			if (this.getSlot(0).isItemValid(is))
+			{
 				return super.mergeItemStack(is, slotStart, slotFinish, backward);
 			}
 			return false;
@@ -67,14 +83,18 @@ public class ContainerIceBunker extends Container {
 		return super.mergeItemStack(is, slotStart, slotFinish, backward);
 	}
 
-	protected void bindPlayerInventory(InventoryPlayer inventoryPlayer) {
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 9; j++) {
+	protected void bindPlayerInventory(InventoryPlayer inventoryPlayer)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 9; j++)
+			{
 				addSlotToContainer(new Slot(inventoryPlayer, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
 			}
 		}
 
-		for (int i = 0; i < 9; i++) {
+		for (int i = 0; i < 9; i++)
+		{
 			addSlotToContainer(new Slot(inventoryPlayer, i, 8 + i * 18, 142));
 		}
 	}

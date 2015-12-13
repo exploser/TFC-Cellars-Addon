@@ -12,19 +12,22 @@ import sladki.tfc.Cellars;
 import sladki.tfc.Containers.ContainerIceBunker;
 import sladki.tfc.TileEntities.TEIceBunker;
 
-public class GuiIceBunker extends GuiContainer {
+public class GuiIceBunker extends GuiContainer
+{
 
 	private static ResourceLocation texture = new ResourceLocation(Cellars.MODID, "textures/gui/gui_iceBunker.png");
 	private static Minecraft mc = Minecraft.getMinecraft();
 	TEIceBunker teBunker;
 
-	public GuiIceBunker(InventoryPlayer inventoryPlayer, TEIceBunker tileEntity) {
+	public GuiIceBunker(InventoryPlayer inventoryPlayer, TEIceBunker tileEntity)
+	{
 		super(new ContainerIceBunker(inventoryPlayer, tileEntity));
 		teBunker = tileEntity;
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float f, int i, int j) {
+	protected void drawGuiContainerBackgroundLayer(float f, int i, int j)
+	{
 		mc.getTextureManager().bindTexture(texture);
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -34,7 +37,8 @@ public class GuiIceBunker extends GuiContainer {
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int param1, int param2) {
+	protected void drawGuiContainerForegroundLayer(int param1, int param2)
+	{
 		// teBunker.updateEntity();
 		float coolantAmount = teBunker.getCoolantAmount();
 		int maxCoolantAmount = teBunker.getMaxCoolantAmount();

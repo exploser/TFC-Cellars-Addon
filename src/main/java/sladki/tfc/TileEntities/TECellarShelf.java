@@ -13,7 +13,8 @@ import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.Constants;
 
-public class TECellarShelf extends TileEntity implements IInventory {
+public class TECellarShelf extends TileEntity implements IInventory
+{
 
 	private ItemStack[] inventory;
 
@@ -22,7 +23,8 @@ public class TECellarShelf extends TileEntity implements IInventory {
 
 	private int updateTickCounter = 120;
 
-	public TECellarShelf() {
+	public TECellarShelf()
+	{
 		inventory = new ItemStack[getSizeInventory()];
 	}
 
@@ -33,37 +35,42 @@ public class TECellarShelf extends TileEntity implements IInventory {
 	 */
 
 	@Override
-	public void updateEntity() {
-		if (worldObj.isRemote) {
+	public void updateEntity()
+	{
+		if (worldObj.isRemote)
+		{
 			return;
 		}
 
 		// Wait 120 ticks for cellars updates to prevent ticking decay before
-		if (inCellar) {
+		if (inCellar)
+		{
 			// if the shelf is inside a cellar, use cellar temperature
 			float envDecay = TFC_Core.getEnvironmentalDecay(temperature);
 			TFC_Core.handleItemTicking(this, worldObj, xCoord, yCoord, zCoord, envDecay);
-		} else {
+		}
+		else
+		{
 			// otherwise, let TFC handle the ticking
-			if (updateTickCounter > 0) {
+			if (updateTickCounter > 0)
+			{
 				updateTickCounter--;
 
 				// To ensure correct work for cellars built in multiple chunks
 				// TODO: enable this if really needed
 				/*
-				if (updateTickCounter == 100) {
-					World world = this.getWorldObj();
-
-					world.getBlock(xCoord + 4, 0, zCoord);
-					world.getBlock(xCoord - 4, 0, zCoord);
-					world.getBlock(xCoord, 0, zCoord + 4);
-					world.getBlock(xCoord, 0, zCoord - 4);
-
-					world.getBlock(xCoord + 4, 0, zCoord - 4);
-					world.getBlock(xCoord + 4, 0, zCoord + 4);
-					world.getBlock(xCoord - 4, 0, zCoord - 4);
-					world.getBlock(xCoord - 4, 0, zCoord + 4);
-				}*/
+				 * if (updateTickCounter == 100) { World world =
+				 * this.getWorldObj();
+				 * 
+				 * world.getBlock(xCoord + 4, 0, zCoord); world.getBlock(xCoord
+				 * - 4, 0, zCoord); world.getBlock(xCoord, 0, zCoord + 4);
+				 * world.getBlock(xCoord, 0, zCoord - 4);
+				 * 
+				 * world.getBlock(xCoord + 4, 0, zCoord - 4);
+				 * world.getBlock(xCoord + 4, 0, zCoord + 4);
+				 * world.getBlock(xCoord - 4, 0, zCoord - 4);
+				 * world.getBlock(xCoord - 4, 0, zCoord + 4); }
+				 */
 				return;
 			}
 
@@ -71,28 +78,36 @@ public class TECellarShelf extends TileEntity implements IInventory {
 		}
 	}
 
-	public void updateShelf(boolean inCellar, float temp) {
+	public void updateShelf(boolean inCellar, float temp)
+	{
 		this.inCellar = inCellar;
 		this.temperature = temp;
 	}
 
 	@Override
-	public int getSizeInventory() {
+	public int getSizeInventory()
+	{
 		return 14;
 	}
 
 	@Override
-	public ItemStack getStackInSlot(int slot) {
+	public ItemStack getStackInSlot(int slot)
+	{
 		return inventory[slot];
 	}
 
 	@Override
-	public ItemStack decrStackSize(int slot, int amount) {
+	public ItemStack decrStackSize(int slot, int amount)
+	{
 		ItemStack stack = inventory[slot];
-		if (stack != null) {
-			if (stack.stackSize <= amount) {
+		if (stack != null)
+		{
+			if (stack.stackSize <= amount)
+			{
 				setInventorySlotContents(slot, null);
-			} else {
+			}
+			else
+			{
 				stack = stack.splitStack(amount);
 			}
 		}
@@ -100,72 +115,88 @@ public class TECellarShelf extends TileEntity implements IInventory {
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int slot) {
+	public ItemStack getStackInSlotOnClosing(int slot)
+	{
 		return null;
 	}
 
 	@Override
-	public void setInventorySlotContents(int slot, ItemStack stack) {
+	public void setInventorySlotContents(int slot, ItemStack stack)
+	{
 		inventory[slot] = stack;
-		if (stack != null && stack.stackSize > getInventoryStackLimit()) {
+		if (stack != null && stack.stackSize > getInventoryStackLimit())
+		{
 			stack.stackSize = getInventoryStackLimit();
 		}
 	}
 
 	@Override
-	public String getInventoryName() {
+	public String getInventoryName()
+	{
 		return "Cellar Shelf";
 	}
 
 	@Override
-	public boolean hasCustomInventoryName() {
+	public boolean hasCustomInventoryName()
+	{
 		return false;
 	}
 
 	@Override
-	public int getInventoryStackLimit() {
+	public int getInventoryStackLimit()
+	{
 		return 64;
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
+	public boolean isUseableByPlayer(EntityPlayer player)
+	{
 		return true;
 	}
 
 	@Override
-	public void openInventory() {
+	public void openInventory()
+	{
 	}
 
 	@Override
-	public void closeInventory() {
+	public void closeInventory()
+	{
 	}
 
 	@Override
-	public boolean isItemValidForSlot(int slot, ItemStack stack) {
+	public boolean isItemValidForSlot(int slot, ItemStack stack)
+	{
 		return true;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tagCompound) {
+	public void readFromNBT(NBTTagCompound tagCompound)
+	{
 		super.readFromNBT(tagCompound);
 
 		NBTTagList tagList = tagCompound.getTagList("Items", Constants.NBT.TAG_COMPOUND);
-		for (int i = 0; i < tagList.tagCount(); i++) {
+		for (int i = 0; i < tagList.tagCount(); i++)
+		{
 			NBTTagCompound tag = tagList.getCompoundTagAt(i);
 			byte slot = tag.getByte("Slot");
-			if (slot >= 0 && slot < getSizeInventory()) {
+			if (slot >= 0 && slot < getSizeInventory())
+			{
 				inventory[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tagCompound) {
+	public void writeToNBT(NBTTagCompound tagCompound)
+	{
 		super.writeToNBT(tagCompound);
 
 		NBTTagList tagList = new NBTTagList();
-		for (int i = 0; i < getSizeInventory(); i++) {
-			if (inventory[i] != null) {
+		for (int i = 0; i < getSizeInventory(); i++)
+		{
+			if (inventory[i] != null)
+			{
 				NBTTagCompound tag = new NBTTagCompound();
 				tag.setByte("Slot", (byte) i);
 				inventory[i].writeToNBT(tag);
@@ -176,14 +207,16 @@ public class TECellarShelf extends TileEntity implements IInventory {
 	}
 
 	@Override
-	public Packet getDescriptionPacket() {
+	public Packet getDescriptionPacket()
+	{
 		NBTTagCompound tagCompound = new NBTTagCompound();
 		writeToNBT(tagCompound);
 		return new S35PacketUpdateTileEntity(this.xCoord, this.yCoord, this.zCoord, 1, tagCompound);
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet) {
+	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet)
+	{
 		readFromNBT(packet.func_148857_g());
 	}
 

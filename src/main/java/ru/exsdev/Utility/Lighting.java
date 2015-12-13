@@ -7,12 +7,14 @@ import com.bioxx.tfc.api.TFCBlocks;
 
 import net.minecraft.init.Blocks;
 
-public class Lighting {
+public class Lighting
+{
 	private static final Map<Object, Integer> lightingValues = new HashMap<Object, Integer>();
 
-	static {
+	static
+	{
 		lightingValues.put(Blocks.glowstone, 40);
 		lightingValues.put(TFCBlocks.torch, 10);
 	}
-	
+
 }
