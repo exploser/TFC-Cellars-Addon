@@ -1,7 +1,7 @@
 [
 {
   "modid": "cellarsreworked",
-  "name": "TFCCellarsAddon",
+  "name": "TFC Cellars Reworked",
   "description": "TFC cellars and ice-houses addon",
   "version": "${version}",
   "mcversion": "${mcversion}",
