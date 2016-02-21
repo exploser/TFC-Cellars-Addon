@@ -39,26 +39,20 @@ public class BlockIceBunker extends BlockContainer
 			return true;
 		}
 
-		boolean getInfo = false;
+		TEIceBunker te = (TEIceBunker) world.getTileEntity(x, y, z);
+
 		if (player.isSneaking())
 		{
-			// if (player.getCurrentEquippedItem() == null) {
-			getInfo = true;
-			// } else {
-			// return false;
-			// }
+			te.getCellarInfo(player);
+			return true;
 		}
-		TEIceBunker te = (TEIceBunker) world.getTileEntity(x, y, z);
+
 		if (te != null)
 		{
-			if (getInfo)
-			{
-				te.getCellarInfo(player);
-				return true;
-			}
 			player.openGui(Cellars.instance, 0, world, x, y, z);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -66,6 +60,7 @@ public class BlockIceBunker extends BlockContainer
 	public int getLightValue(IBlockAccess world, int x, int y, int z)
 	{
 		TEIceBunker te = (TEIceBunker) world.getTileEntity(x, y, z);
+		// TODO: implement lighting
 		if (te.isComplete())
 		{
 			return 10;

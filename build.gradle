@@ -19,7 +19,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "0.2"
+version = "0.3"
 group= "ru.exsdev.cellarsreworked" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "cellarsreworked"
 
@@ -77,9 +77,11 @@ sourceSets {
 compileJava.source = sourceSets.filtered.java 
 
 task processVersion (type: Copy) { 
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
     from sourceSets.main.java 
     into filteredSourceDir 
-    expand('version': project.version) 
+    expand('version': project.version)
 }
 
 compileJava.dependsOn processVersion 

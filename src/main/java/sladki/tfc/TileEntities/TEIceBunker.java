@@ -17,11 +17,14 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraftforge.common.util.Constants;
+import ru.exsdev.ModManagerReworked;
+import ru.exsdev.TileEntities.TEFoodPrepReworked;
 import ru.exsdev.Utility.Coolants;
 import sladki.tfc.ModConfig;
 import sladki.tfc.ModManager;
@@ -41,15 +44,33 @@ public class TEIceBunker extends TileEntity implements IInventory
 										// a cellar has become not complete
 	private int[] size = new int[4]; // internal size, +z -x -z + x
 	private boolean isComplete = false;
-	private float temperature = 0;
+	private float temperature = ModConfig.cellarTemperature;
 	private int updateTickCounter = 1200;
 
 	private int loss = 0;
 	private int maxCoolantAmount = 120;
 
+	private static String statusComplete = "Cooling...";
+
 	private static int innerHeight = 2;
-	private static List<Block> allowedBlocks = Arrays.asList(Blocks.wall_sign, Blocks.standing_sign, Blocks.air,
-			TFCBlocks.barrel, TFCBlocks.foodPrep, ModManager.CellarWallBlock, ModManager.CellarShelfBlock);
+	private static List<Block> allowedBlocks = Arrays.asList(
+			Blocks.wall_sign,
+			Blocks.standing_sign,
+			Blocks.air,
+			TFCBlocks.barrel,
+			TFCBlocks.foodPrep,
+			ModManager.CellarWallBlock,
+			ModManager.CellarShelfBlock,
+			ModManagerReworked.BlockFoodPrepReworked
+			);
+
+	private enum BlockType
+	{
+		Block_Other,
+		Block_Wall,
+		Block_Door,
+		Block_Allowed,
+	}
 
 	public TEIceBunker()
 	{
@@ -77,7 +98,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 		}
 		else
 		{
-			player.addChatMessage(new ChatComponentText("The cellar is not complete"));
+			player.addChatMessage(new ChatComponentText("The cellar is not complete: " + structureStatus()));
 		}
 	}
 
@@ -116,7 +137,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 
 		if (checkCompliance)
 		{
-			isComplete = isStructureComplete();
+			isComplete = structureStatus() == statusComplete;
 			this.worldObj.updateLightByType(EnumSkyBlock.Block, xCoord, yCoord, zCoord);
 		}
 
@@ -196,7 +217,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 		}
 	}
 
-	private boolean isStructureComplete()
+	private String structureStatus()
 	{
 		oldSize[1] = size[1];
 		oldSize[3] = size[3];
@@ -207,7 +228,8 @@ public class TEIceBunker extends TileEntity implements IInventory
 		entrance[1] = 0;
 		entrance[2] = 0;
 		entrance[3] = 0;
-		int blockType = -1;
+
+		BlockType blockType = BlockType.Block_Other;
 
 		// get size
 		for (int direction = 0; direction < 4; direction++)
@@ -223,7 +245,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 								+ " can't find a wall on " + direction + " side");
 					}
 
-					return false;
+					return "Hole in a wall";
 				}
 
 				if (direction == 1)
@@ -243,15 +265,15 @@ public class TEIceBunker extends TileEntity implements IInventory
 					blockType = getBlockType(0, 1, distance);
 				}
 
-				if (blockType == 0 || blockType == 1)
+				if (blockType == BlockType.Block_Door || blockType == BlockType.Block_Wall)
 				{
 					size[direction] = distance - 1;
 					break;
 				}
 
-				if (blockType == -1)
+				if (blockType == BlockType.Block_Other)
 				{
-					return false;
+					return "Unwanted blocks inside a wall";
 				}
 			}
 		}
@@ -279,11 +301,12 @@ public class TEIceBunker extends TileEntity implements IInventory
 						{
 							if (z >= -size[2] && z <= size[0])
 							{
-								if (blockType == 2)
+								if (blockType == BlockType.Block_Allowed)
 								{
 									continue;
 								}
-								return false;
+								return "Unwanted blocks inside the cellar: " + this.worldObj
+										.getBlock(xCoord + x, yCoord + y, zCoord + z).getUnlocalizedName();
 							}
 						}
 					}
@@ -291,15 +314,15 @@ public class TEIceBunker extends TileEntity implements IInventory
 					// Corners
 					if ((x == -size[1] - 1 || x == size[3] + 1) && (z == -size[2] - 1 || z == size[0] + 1))
 					{
-						if (blockType == 0)
+						if (blockType == BlockType.Block_Wall)
 						{
 							continue;
 						}
-						return false;
+						return "Incomplete corners";
 					}
 
 					// Doors
-					if (blockType == 1)
+					if (blockType == BlockType.Block_Door)
 					{
 						// upper part of the door
 						if (entrance[0] == x && entrance[1] == z)
@@ -338,15 +361,15 @@ public class TEIceBunker extends TileEntity implements IInventory
 									+ " has too many doors");
 						}
 
-						return false;
+						return "Multiple doors";
 					}
 
 					// Walls
-					if (blockType == 0)
+					if (blockType == BlockType.Block_Wall)
 					{
 						continue;
 					}
-					return false;
+					return "Wrong block somewhere " + blockType.toString() + " " + x + " " + y + " " + z;
 				}
 			}
 		}
@@ -358,7 +381,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 				System.out
 						.println("Cellar at " + this.xCoord + " " + this.yCoord + " " + this.zCoord + " has no doors");
 			}
-			return false;
+			return "No doors found";
 		}
 
 		// check the entrance
@@ -376,7 +399,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 					{
 						if (x == 0 && z == 0)
 						{
-							if (blockType == 1)
+							if (blockType == BlockType.Block_Door)
 							{
 								continue;
 							}
@@ -386,11 +409,11 @@ public class TEIceBunker extends TileEntity implements IInventory
 								System.out.println("Cellar at " + this.xCoord + " " + this.yCoord + " " + this.zCoord
 										+ " doesn't have the second door, block there is " + blockType);
 							}
-							return false;
+							return "Only one door found";
 						}
 					}
 
-					if (blockType == 0)
+					if (blockType == BlockType.Block_Wall)
 					{
 						continue;
 					}
@@ -400,7 +423,7 @@ public class TEIceBunker extends TileEntity implements IInventory
 						System.out.println("Door in the cellar at " + this.xCoord + " " + this.yCoord + " "
 								+ this.zCoord + " isn't surrounded by wall, block there is " + blockType);
 					}
-					return false;
+					return "Doors are not surrounded by walls";
 				}
 			}
 		}
@@ -412,31 +435,33 @@ public class TEIceBunker extends TileEntity implements IInventory
 
 		calculateDoorsLoss();
 
-		return true;
+		return statusComplete;
 	}
 
-	private int getBlockType(int x, int y, int z)
+	private BlockType getBlockType(int x, int y, int z)
 	{
 		Block block = this.getWorldObj().getBlock(xCoord + x, yCoord + y, zCoord + z);
 		if (block == ModManager.CellarWallBlock)
 		{
-			return 0;
+			return BlockType.Block_Wall;
 		}
 		else if (block == ModManager.CellarDoorBlock)
 		{
-			return 1;
+			return BlockType.Block_Door;
 		}
 		else if (allowedBlocks.contains(block))
 		{
-			return 2;
+			return BlockType.Block_Allowed;
 		}
 
 		if (ModConfig.isDebugging)
 		{
-			System.out.println("Incorrect cellar block at " + x + " " + y + " " + z + " " + block.getUnlocalizedName());
+			MinecraftServer.getServer().getConfigurationManager().sendChatMsg(new ChatComponentText(
+					"Incorrect cellar block at " + x + " " + y + " " + z + " " + block.getUnlocalizedName()));
+
 		}
 
-		return -1;
+		return BlockType.Block_Other;
 	}
 
 	public void updateContainers(boolean isDestroying)
@@ -475,6 +500,15 @@ public class TEIceBunker extends TileEntity implements IInventory
 		}
 	}
 
+	private void replaceFoodPrep(int x, int y, int z)
+	{
+		if (this.getWorldObj().isRemote || !isComplete())
+		{
+			return;
+		}
+		this.getWorldObj().setBlock(x, y, z, ModManagerReworked.BlockFoodPrepReworked);
+	}
+
 	private void updateContainer(int x, int y, int z)
 	{
 		Block block = this.getWorldObj().getBlock(xCoord + x, yCoord + y, zCoord + z);
@@ -484,6 +518,47 @@ public class TEIceBunker extends TileEntity implements IInventory
 			if (tileEntity != null)
 			{
 				((TECellarShelf) tileEntity).updateShelf(isComplete(), temperature);
+			}
+		}
+		else if (block == ModManagerReworked.BlockFoodPrepReworked)
+		{
+			TileEntity tileEntity = this.worldObj.getTileEntity(xCoord + x, yCoord + y, zCoord + z);
+			if (tileEntity != null)
+			{
+				((TEFoodPrepReworked) tileEntity).updateCellarState(isComplete(), getTemperature());
+			}
+		}
+		else if (block == TFCBlocks.foodPrep)
+		{
+			TileEntity tileEntity = this.worldObj.getTileEntity(xCoord + x, yCoord + y, zCoord + z);
+			if (tileEntity != null)
+			{
+				IInventory fp = (IInventory) tileEntity;
+
+				ItemStack[] stacks = new ItemStack[fp.getSizeInventory()];
+
+				for (int i = 0; i < fp.getSizeInventory(); i++)
+				{
+					stacks[i] = fp.getStackInSlot(i);
+				}
+
+				this.worldObj.removeTileEntity(xCoord + x, yCoord + y, zCoord + z);
+				this.worldObj.setBlock(xCoord + x, yCoord + y, zCoord + z, ModManagerReworked.BlockFoodPrepReworked);
+
+				TileEntity tileEntityNew = this.worldObj.getTileEntity(xCoord + x, yCoord + y, zCoord + z);
+
+				fp = (IInventory) tileEntityNew;
+
+				if (tileEntityNew != null)
+				{
+					for (int i = 0; i < fp.getSizeInventory(); i++)
+					{
+						fp.setInventorySlotContents(i, stacks[i]);
+					}
+
+					((TEFoodPrepReworked) tileEntityNew).updateCellarState(isComplete(), getTemperature());
+				}
+
 			}
 		}
 	}
