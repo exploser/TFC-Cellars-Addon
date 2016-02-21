@@ -19,6 +19,9 @@ buildscript {
 
 apply plugin: 'forge'
 
+sourceCompatibility = 1.8
+targetCompatibility = '1.8'
+
 version = "0.3"
 group= "ru.exsdev.cellarsreworked" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "cellarsreworked"
@@ -43,7 +46,6 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-    compile files('/build/libs/[1.7.10]TerraFirmaCraft-0.79.26.881.jar')
 }
 
 processResources
